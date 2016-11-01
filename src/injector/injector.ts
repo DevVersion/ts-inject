@@ -8,7 +8,7 @@ export class Injector {
   private keyIds: number[] = [];
   private objects = new Map<number, any>();
 
-  constructor(private declarations?: Constructable<any>[]) {
+  constructor(public declarations?: Constructable<any>[]) {
 
     if (!Reflect) {
       throw 'Error: Injector could not find Reflect';

@@ -1,0 +1,15 @@
+{
+  "name": "ts-inject",
+  "version": "0.0.5",
+  "description": "TypeScript Dependency Injection",
+  "main": "index.js",
+  "repository": {
+    "url": "https://github.com/DevVersion/ts-inject.git",
+    "type": "git"
+  },
+  "author": "Paul Gschwendtner <paulgschwendtner@gmail.com>",
+  "license": "MIT",
+  "devDependencies": {
+    "typescript": "^2.0.6"
+  }
+}

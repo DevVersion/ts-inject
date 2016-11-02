@@ -33,6 +33,8 @@ export class ChildService {
 
 @Injectable()
 export class MyService {
+  
+  /* ChildService will be automatically injected */
   constructor(child: ChildService) {
     child.sayHello();
   }

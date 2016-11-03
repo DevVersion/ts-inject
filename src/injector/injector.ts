@@ -19,6 +19,9 @@ export class Injector {
       declarations.forEach(token => this._registerDeclaration(token));
     }
 
+    // Manually expose the injector instance to the own injector.
+    this.keyIds.push(InjectorKey.get(Injector).id);
+
   }
 
   has(token: Constructable<any>): boolean {

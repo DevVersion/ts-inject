@@ -36,7 +36,7 @@ export class Injector {
     if (this.objects.has(injectorId)) {
       return this.objects.get(injectorId);
     } else {
-      let instance = this._createInstance(injectorKey.token);
+      let instance = this.instantiate(injectorKey.token);
 
       this.objects.set(injectorId, instance);
 
@@ -44,7 +44,7 @@ export class Injector {
     }
   }
 
-  private _createInstance<T>(type: Constructable<T>): T {
+  instantiate<T>(type: Constructable<T>): T {
     let paramTypes: any[] = Reflect.getMetadata('design:paramtypes', type);
     let dependencies: any[] = [];
 

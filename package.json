@@ -1,6 +1,6 @@
 {
   "name": "ts-inject",
-  "version": "0.0.7",
+  "version": "0.0.7-1",
   "description": "TypeScript Dependency Injection",
   "main": "index.js",
   "repository": {

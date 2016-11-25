@@ -2,13 +2,25 @@ import {InjectorKey} from './injector_key';
 import {INJECTABLE_META_KEY} from './injector_meta';
 
 export type Constructable<T> = { new(...args: any[]): T; };
+export type ProvideToken<T> = Constructable<T>;
 
+export type ProvideValue<T> = {
+  provide: ProvideToken<T>,
+  useClass?: Constructable<any>,
+  useValue?: any
+};
+
+export type Token<T> = ProvideValue<T> | ProvideToken<T>;
+
+/**
+ * Injector class
+ */
 export class Injector {
 
   private keyIds: number[] = [];
   private objects = new Map<number, any>();
 
-  constructor(public declarations?: Constructable<any>[]) {
+  constructor(public declarations?: Token<any>[]) {
 
     if (!Reflect) {
       throw 'Error: Injector could not find Reflect';
@@ -24,11 +36,11 @@ export class Injector {
 
   }
 
-  has(token: Constructable<any>): boolean {
+  has(token: ProvideToken<any>): boolean {
     return this.keyIds.indexOf(InjectorKey.get(token).id) !== -1;
   }
 
-  get<T>(token: Constructable<T>): T {
+  get<T>(token: ProvideToken<T>): T {
     let injectorKey = InjectorKey.get(token);
     let injectorId = injectorKey.id;
 
@@ -39,7 +51,7 @@ export class Injector {
     if (this.objects.has(injectorId)) {
       return this.objects.get(injectorId);
     } else {
-      let instance = this.instantiate(injectorKey.token);
+      let instance = this.instantiate(token as Constructable<T>);
 
       this.objects.set(injectorId, instance);
 
@@ -62,12 +74,46 @@ export class Injector {
     return new type(...dependencies);
   }
 
-  private _registerDeclaration(token: Constructable<any>) {
+  private _getProvideToken(token: Token<any>): ProvideToken<any> {
+    return this._isProvideValue(token) ? (token as ProvideValue<any>).provide :
+                                          token as ProvideToken<any>;
+  }
+
+  private _isProvideValue(token: Token<any>): boolean {
+    return token.hasOwnProperty('provide');
+  }
+
+  private _registerDeclaration(token: Token<any>) {
+
+    let provideToken = this._getProvideToken(token);
+    let isProvideValue = this._isProvideValue(token);
+
+    if (!isProvideValue) {
+      this._validateConstructable(provideToken as Constructable<any>);
+    }
+
+    let injectorId = InjectorKey.get(provideToken).id;
+
+    if (isProvideValue) {
+      let provideValue = token as ProvideValue<any>;
+
+      // TODO(devversion): SORT by dependencies etc.
+      if (provideValue.useClass) {
+        this._validateConstructable(provideValue.useClass);
+        this.objects.set(injectorId, this.instantiate(provideValue.useClass));
+      } else {
+        this.objects.set(injectorId, provideValue.useValue);
+      }
+
+    }
+
+    this.keyIds.push(injectorId);
+  }
+
+  private _validateConstructable(token: Constructable<any>): void {
     if (!Reflect.hasMetadata(INJECTABLE_META_KEY, token)) {
       throw `Error: Injector declaration ${token.name} is not a registered injectable.`;
     }
-
-    this.keyIds.push(InjectorKey.get(token).id);
   }
 
   private _resolveDependencies(paramTypes: any[]): any[] {
